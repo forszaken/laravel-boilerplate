@@ -1,0 +1,43 @@
+version: "3.7"
+services:
+  database:
+    container_name: database
+    image: mysql:8
+    volumes:
+      - "./.data/db:/var/lib/mysql"
+    restart: always
+    env_file: "backend/.env"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=db_name
+
+  frontend:
+    build:
+      context: frontend/docker/development/nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/app
+
+  backend-nginx:
+    build:
+      context: backend/docker/development/nginx
+    ports:
+      - "8081:80"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - backend-php-fpm
+
+  backend-php-fpm:
+    build:
+      context: backend/docker/development/php-fpm
+    volumes:
+      - ./backend:/app
+
+  backend-php-cli:
+    build:
+      context: backend/docker/development/php-cli
+    volumes:
+      - ./backend:/app
